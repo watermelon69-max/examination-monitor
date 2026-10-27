@@ -1,0 +1,72 @@
+# All durations use elapsed video seconds, independent of inference speed.
+video:
+  source: "data/videos/sample.mp4"
+  fps_target: 8
+  frame_skip: 1
+  resize_width: 1280
+  max_upload_mb: 512
+
+detection:
+  model: "yolov8n.pt"
+  pose_model: "yolov8n-pose.pt"
+  pose_enabled: true
+  confidence_threshold: 0.5
+  iou_threshold: 0.45
+  image_size: 640
+  device: "cpu"
+
+tracking:
+  tracker: "bytetrack"
+  track_buffer: 30
+  track_threshold: 0.5
+  match_threshold: 0.8
+
+seats:
+  config_file: "config/seats.json"
+  association_radius: 150
+  leave_threshold_seconds: 5
+
+events:
+  cooldown_seconds: 5
+  head_turn:
+    threshold_count: 3
+    duration_window: 10
+    angle_threshold: 30
+  mobile_phone:
+    confidence_threshold: 0.4
+    duration_threshold: 1
+  gathering:
+    min_cluster_size: 3
+    cluster_radius: 200
+    duration_threshold: 10
+  unusual_movement:
+    velocity_threshold: 200
+    acceleration_threshold: 500
+    erratic_threshold: 3
+
+agent:
+  memory_window_seconds: 60
+  decay_rate: 0.5
+  observe_threshold: 15
+  suspicious_threshold: 40
+  alert_threshold: 70
+  min_duration_in_state: 2
+
+risk_scoring:
+  weights:
+    confidence: 0.25
+    duration: 0.25
+    frequency: 0.30
+    event_type: 0.20
+  event_type_scores:
+    leaving_seat: 15
+    repeated_turning: 20
+    mobile_phone: 35
+    gathering: 25
+    unusual_movement: 12
+
+evidence:
+  save_frames: true
+  save_interval: 1
+  max_storage_gb: 5
+  quality: 85

@@ -1,0 +1,13 @@
+venv/
+.venv/
+.cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+artifacts/
+data/db/
+data/evidence/
+data/videos/
+data/layouts/
+models/*.pt
+.env

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101714">
+    <title>Exam Sentinel ? Examination monitoring</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="Exam Sentinel home"><span class="brand-mark">S</span><span>EXAM<span class="brand-light">SENTINEL</span></span></a>
+        <span class="topbar-label">EXAMINATION MONITORING</span>
+        <span id="connection" class="connection"><i></i> Connecting</span>
+    </header>
+    <main class="workspace">
+        <div class="page-heading">
+            <div><div class="eyebrow">INVIGILATOR WORKSPACE</div><h1>Every seat. In view.</h1><p>Monitor the hall, review observations, and keep evidence in one place.</p></div>
+            <a class="button subtle" id="exportBtn" href="/api/events/export">? Export events</a>
+        </div>
+        <section class="source-panel panel" aria-label="Monitoring controls">
+            <div class="source-top"><div><span class="step-label">01</span><strong>Choose your source</strong></div><span id="visionStatus" class="muted small">Checking vision models?</span></div>
+            <div class="source-controls">
+                <div class="source-options" role="group" aria-label="Video source">
+                    <button class="source-option selected" data-source="demo" aria-pressed="true"><span class="source-icon">?</span><span>Simulation<small>Explore the dashboard</small></span></button>
+                    <button class="source-option" data-source="upload" aria-pressed="false"><span class="source-icon">?</span><span>Video file<small>Analyze recorded footage</small></span></button>
+                    <button class="source-option" data-source="camera" aria-pressed="false"><span class="source-icon">?</span><span>Camera<small>Connected to this computer</small></span></button>
+                </div>
+                <div class="session-controls"><button class="button primary" id="startBtn">? Start monitoring</button><button class="button danger" id="stopBtn" disabled>? Stop</button></div>
+            </div>
+            <div id="uploadControls" class="upload-controls" hidden>
+                <label class="button subtle upload-button" for="videoFile">? Upload video<input type="file" id="videoFile" accept=".mp4,.avi,.mov,.mkv,.webm,.m4v" hidden></label>
+                <select id="savedVideos" aria-label="Uploaded videos"><option value="">Choose an uploaded video</option></select>
+                <span id="uploadStatus" class="small muted">MP4, AVI, MOV, MKV, WebM ? up to 512 MB</span>
+            </div>
+            <div id="cameraControls" class="upload-controls" hidden><label for="cameraIndex" class="small">Camera</label><select id="cameraIndex"><option value="0">Camera 0 (default)</option><option value="1">Camera 1</option><option value="2">Camera 2</option></select><button class="button subtle small" id="previewCameraBtn">Preview camera</button></div>
+            <div class="source-bottom"><p id="sourceHelp">Simulation uses synthetic students and observations. No real footage is analyzed.</p><div class="seat-controls"><span id="seatCount" class="small muted">6 preset seats</span><button class="button subtle small" id="configSeatsBtn" disabled>? Configure seats</button></div></div>
+        </section>
+        <div id="errorBanner" class="error-banner" role="alert" hidden></div>
+        <div class="stats-grid">
+            <article class="stat-card"><span>Students in view</span><div><strong id="statStudents">0</strong><small>currently tracked</small></div></article>
+            <article class="stat-card"><span>Session observations</span><div><strong id="statEvents">0</strong><small>with saved context</small></div></article>
+            <article class="stat-card"><span><i class="dot red"></i> High risk</span><div><strong id="statHigh">0</strong><small>review required</small></div></article>
+            <article class="stat-card"><span><i class="dot orange"></i> Suspicious</span><div><strong id="statMedium">0</strong><small>keep in view</small></div></article>
+        </div>
+        <div class="dashboard-grid">
+            <div class="main-column">
+                <section class="panel video-panel">
+                    <div class="panel-heading"><div><span class="eyebrow">HALL VIEW</span><h2 id="sourceTitle">Simulation preview</h2></div><span id="status" class="status-pill">Idle</span></div>
+                    <div class="video-stage"><img id="liveView" src="/api/demo/preview" alt="Examination hall video preview"><div id="videoBadge" class="video-badge">SIMULATION</div><div id="videoMessage" class="video-message" hidden></div></div>
+                    <div class="video-footer"><div class="legend"><span><i class="dot green"></i>Normal</span><span><i class="dot yellow"></i>Observe</span><span><i class="dot orange"></i>Suspicious</span><span><i class="dot red"></i>Alert</span></div><span id="videoMetrics" class="mono muted small">00:00 ? Ready</span></div>
+                    <div class="progress-track"><div id="videoProgress"></div></div>
+                </section>
+                <section class="panel students-panel">
+                    <div class="panel-heading"><div><span class="eyebrow">LIVE ASSESSMENT</span><h2>Tracked students</h2></div><span id="trackerLabel" class="small muted">Waiting for a session</span></div>
+                    <div class="table-wrap"><table><thead><tr><th>Student</th><th>Assigned seat</th><th>State</th><th>Risk score</th><th>Recent events</th></tr></thead><tbody id="studentsTable"><tr><td colspan="5" class="empty-cell">Start a session to see student states.</td></tr></tbody></table></div>
+                </section>
+            </div>
+            <aside class="sidebar">
+                <section class="panel active-panel"><div class="panel-heading"><div><span class="eyebrow">REQUIRES ATTENTION</span><h2>Active alerts <span id="activeCount" class="count">0</span></h2></div><label class="sound-toggle"><input type="checkbox" id="soundEnabled">Sound</label></div><div id="activeAlerts" class="alert-list"><div class="empty-state"><span class="empty-icon">?</span><strong>All clear</strong><p>Students with elevated risk will appear here.</p></div></div></section>
+                <section class="panel history-panel"><div class="panel-heading"><div><span class="eyebrow">SAVED OBSERVATIONS</span><h2>Event history</h2></div><span id="historyCount" class="small muted">0 events</span></div>
+                    <div class="history-filters"><select id="riskFilter" aria-label="Filter events by risk"><option value="">All risk levels</option><option>High</option><option>Medium</option><option>Low</option><option>Minimal</option></select><select id="modeFilter" aria-label="Filter event source"><option value="session">This session</option><option value="all">All history</option><option value="real">Real footage</option><option value="demo">Simulation</option></select></div>
+                    <div id="alertHistory" class="history-list"><p class="empty-text">No observations saved yet.</p></div><button id="loadMoreBtn" class="load-more" hidden>Load more events</button>
+                </section>
+                <p class="review-note">Observations support an invigilator?s review. Risk scores describe detected patterns; they do not establish misconduct.</p>
+            </aside>
+        </div>
+        <footer class="page-footer"><span><i class="dot green"></i> Local processing ? evidence stored on this computer</span><a href="/docs" target="_blank" rel="noopener">API documentation ?</a></footer>
+    </main>
+    <dialog id="seatDialog" class="modal seat-modal">
+        <div class="modal-heading"><div><span class="eyebrow">SEAT CALIBRATION</span><h2>Mark each assigned seat</h2></div><button class="icon-button" id="closeSeatsBtn" aria-label="Close seat editor">?</button></div>
+        <p class="muted small">Drag a rectangle around each seated student?s area. Coordinates follow the processed video. Save before monitoring.</p>
+        <div class="seat-canvas-wrap"><canvas id="seatCanvas" aria-label="Draw seat rectangles on the video preview"></canvas></div>
+        <div class="modal-actions"><span id="editorCount" class="small muted">0 seats</span><button id="undoSeatBtn" class="button subtle">Undo last</button><button id="clearSeatsBtn" class="button subtle">Clear seats</button><button id="saveSeatsBtn" class="button primary">Save layout</button></div>
+    </dialog>
+    <dialog id="evidenceModal" class="modal evidence-modal"><div class="modal-heading"><div><span class="eyebrow">OBSERVATION DETAILS</span><h2 id="evidenceTitle">Supporting evidence</h2></div><button id="closeEvidenceBtn" class="icon-button" aria-label="Close evidence">?</button></div><img id="evidenceImg" alt="Annotated observation evidence"><p id="evidenceUnavailable" class="empty-text" hidden>Evidence is unavailable or has expired.</p><dl id="evidenceDetails" class="evidence-details"></dl></dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
